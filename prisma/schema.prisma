@@ -11,34 +11,37 @@ datasource db {
 }
 
 model User {
-    id Int String @id @default(uuid())
+    id  String @id @default(uuid())
     name            String
-    isAdmin         Boolean
+    role            Role @default(BASIC)
+     age Int
     email           String @unique
     blob            Bytes?
     writtenPosts    Post[] @relation("WrittenPosts")
     favoritePosts   Post[] @relation("FavoritePosts")
-    UserPreference  UserPreference?
-    age Int
-}
+    userPreference        UserPreference?  @relation(fields : [userPreferenceId], references: [id])
+    userPreferenceId      String? @unique
 
-model UserPreference {
-    id Int      String @id @default(uuid())
-    emailUpdate Boolean
-    user        User  @relation(fields : [userId], references: [id])
-    userId      string @unique
 
-    @@unique([age, name])
+     @@unique([age, name])
     @@index([email])
 
 }
-mode Post {
-    id Int              String @id @default(uuid())
+
+model UserPreference {
+    id       String @id @default(uuid())
+    emailUpdate Boolean
+     user  User?
+
+
+}
+model Post {
+    id               String @id @default(uuid())
     title                String
     averageRating        Float
-    createAt            DateTime  @default(now)
+    createAt            DateTime  @default(now())
     updatedAt           DateTime @updatedAt
-    author User         @relation('WrittenPosts", fields: [authorId], references: [id])
+    author              User     @relation("WrittenPosts", fields: [authorId], references: [id])
     authorId            String
     favoriteBy           User? @relation("FavoritePosts", fields: [favoriteById], references: [id])
     favoriteById        String?
@@ -48,7 +51,13 @@ mode Post {
 }
 
 model Category {
-      id Int String @id @default(uuid())
+      id  String @id @default(uuid())
       posts  Post[]
       name   String @unique
+}
+
+enum Role {
+    BASIC
+    EDITOR
+    ADMIN
 }
